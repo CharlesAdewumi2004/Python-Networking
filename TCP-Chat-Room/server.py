@@ -7,7 +7,7 @@ class Server:
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.clients = []
         self.clinetName = []
-        self.serverIp = '127.0.0.1'
+        self.serverIp = '192.168.234.128'
         self.port = 5555
         self.server.bind((self.serverIp, self.port))
         self.server.listen()
@@ -37,7 +37,7 @@ class Server:
                     break
                 else:
                     # Broadcast the received message to other clients
-                    print(f"Received message from {self.clinetName[self.clients.index(client_socket)]}: {message.decode('utf-8')}")
+                    print(f"{self.clinetName[self.clients.index(client_socket)]}: {message.decode('utf-8')}")
                     self.broadcast(message, client_socket)
             except:
                 # Handle any client disconnection errors
@@ -52,7 +52,7 @@ class Server:
             #adds client to list of clinets and the name of th new client to clinetNames
             self.clinetName.append(newClient.decode('utf-8'))
             self.clients.append(client_socket) 
-            print(f"New connection from {client_address}")
+            print(f"New connection from {newClient.decode('utf-8')}")
             #creates a thread to handle client messages
             client_thread = threading.Thread(target=self.handle_client, args=(client_socket,))
             client_thread.start()
