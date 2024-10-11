@@ -7,7 +7,7 @@ class Server:
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.clients = []
         self.clinetName = []
-        self.serverIp = '192.168.234.128'
+        self.serverIp = '192.168.0.38'
         self.port = 5555
         self.server.bind((self.serverIp, self.port))
         self.server.listen()
@@ -32,7 +32,7 @@ class Server:
                 if not message:
                     # If no message is received, remove the client
                     print("Client disconnected")
-                    self.clients.remove(client_socket)
+                    self.clients.remove(client_socket)  
                     client_socket.close()
                     break
                 else:
