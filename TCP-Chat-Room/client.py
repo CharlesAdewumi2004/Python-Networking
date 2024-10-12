@@ -1,5 +1,6 @@
 import socket
 import threading
+import pickle
 
 class Client:
     def __init__(self, server_ip, server_port):
@@ -16,9 +17,19 @@ class Client:
         except Exception as e:
             print(f"Connection error: {e}")
             return
-        
+        try:
+            received_data = self.client.recv(4096)
+            chatRecentLogs = pickle.loads(received_data)
+            if(len(chatRecentLogs) != 0):
+                for message in chatRecentLogs:
+                    print(message)
+            else:
+                pass
+        except:
+            pass
         # Start threads for sending and receiving messages
         receive_thread = threading.Thread(target=self.receive_messages)
+
         receive_thread.start()
 
         send_thread = threading.Thread(target=self.send_messages)
@@ -30,7 +41,7 @@ class Client:
             try:
                 message = self.client.recv(1024).decode('utf-8')  # Receive message
                 if message:
-                    print(f"Server: {message}")  # Display the message from the server
+                    print(f"{message}")  # Display the message from the server
                 else:
                     print("Server disconnected")
                     self.client.close()
@@ -43,8 +54,9 @@ class Client:
     def send_messages(self):
         # Continuously send messages to the server
         while True:
-            message = input("You: ")
+            message = input("")
             try:
+                message = self.name + ": " + message
                 self.client.send(message.encode('utf-8'))  # Send message to the server
             except:
                 print("Error sending message.")
