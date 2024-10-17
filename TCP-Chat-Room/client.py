@@ -65,4 +65,4 @@ class Client:
 
 # Connect to the server
 if __name__ == "__main__":
-    client = Client('192.168.0.38', 5555)
+    client = Client('192.168.186.128', 5555)

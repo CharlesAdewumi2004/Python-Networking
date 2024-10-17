@@ -6,17 +6,20 @@ import pickle
 
 class Server:
     def __init__(self):
-        # creates socket on server side/binds server ip and port numer to socket/sets server to listen for cnnections
+        # Creates socket on server side, binds server IP and port number to socket, sets server to listen for connections
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.users = []
         self.chatRecentLogs = deque(maxlen=20)
-        self.serverIp = '192.168.0.38'
-        self.port = 5555
-        self.server.bind((self.serverIp, self.port))
-        self.server.listen()
-        print(f"Server is listening on {self.serverIp} : {self.port}")
-        
-        self.accept_connections()
+        ip = self.getHostIp()
+        try:
+            self.serverIp = ip  # Corrected to use actual IP
+            self.port = 5555
+            self.server.bind((self.serverIp, self.port))
+            self.server.listen()
+            print(f"Server is listening on {self.serverIp}:{self.port}")
+            self.accept_connections()
+        except Exception as e:
+            print(e)
 
     def broadcast(self, message, clientSocket):
         # Send a message to all connected clients except the sender
@@ -27,6 +30,7 @@ class Server:
                 except:
                     # Remove client if there is an issue
                     self.users.remove(user)
+
     # Handles messages from client
     def handle_client(self, user):
         while True:
@@ -45,23 +49,40 @@ class Server:
                     self.broadcast(message, user.clientSocket)
             except:
                 # Handle any client disconnection errors
-                self.clients.remove(user.clientSocket)
+                self.users.remove(user)  # Corrected from self.clients to self.users
                 user.clientSocket.close()
                 break
-    #accepts clients
+
+    # Accepts clients
     def accept_connections(self):
         while True:
             clientSocket, clientAddress = self.server.accept()  # Accept new client
             newClient = clientSocket.recv(1024)
             newUser = User(newClient.decode('utf-8'), clientSocket, clientAddress)
-            #adds client to list of clinets and the name of th new client to clinetNames
+            # Adds client to list of users
             self.users.append(newUser)
             print(f"New connection from {newUser.name}")
-            #creates a thread to handle client messages
+            # Sends recent chat logs to new client
             serializedRecentLogs = pickle.dumps(self.chatRecentLogs)
             newUser.clientSocket.sendall(serializedRecentLogs)
+            # Creates a thread to handle client messages
             client_thread = threading.Thread(target=self.handle_client, args=(newUser,))
             client_thread.start()
 
+    # Gets host IP
+    def getHostIp(self):
+        try:
+            # Create UDP socket
+            tempSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            # Connect to Google DNS server (corrected tuple)
+            tempSocket.connect(('8.8.8.8', 80))
+            # Get local IP from socket
+            ip = tempSocket.getsockname()[0]
+            tempSocket.close()
+            return ip
+        except Exception as e:
+            return str(e)
+
 if __name__ == "__main__":
-    server = Server()   
+    server = Server()
+ 
